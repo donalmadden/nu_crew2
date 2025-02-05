@@ -66,6 +66,20 @@ class GithubProjectFetcherTool(BaseTool):
 
         try:
 
+            def update_authorization_header(headers, token):
+                """
+                Update the Authorization header with a new bearer token.
+
+                Args:
+                    headers (dict): Existing headers dictionary
+                    token (str): New bearer token
+
+                Returns:
+                    dict: Updated headers dictionary
+                """
+                headers["Authorization"] = f"Bearer {token}"
+                return headers
+
             def substitute_id(query, my_nu_id):
                 """
                 Substitutes the <REPLACE_ME> placeholder with the provided ID in the GraphQL query.
@@ -164,8 +178,10 @@ class GithubProjectFetcherTool(BaseTool):
                 "Content-Type": "application/json"
             }
 
+            _headers = update_authorization_header(headers, os.environ.get("GITHUB_AUTH"))
+
             # Make the request to the GitHub API
-            response = requests.post(url, headers=headers, json={'query': modified_query})
+            response = requests.post(url, headers=_headers, json={'query': modified_query})
             data = response.json()
 
             # Extract and process items
